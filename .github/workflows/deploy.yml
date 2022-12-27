@@ -1,0 +1,20 @@
+name: Weather App Deployment
+
+on:
+ push:
+  branches: 
+    - '**'
+    
+jobs:
+   deploying:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploying Application.
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USERNAME}}
+          password: ${{ secrets.VM_PASSWORD}}
+          port: ${{ secrets.VM_PORT}}
+          script: |
+            git clone git@github.com:${{github.repository}} & cd ${{ github.event.repository.name }} & git checkout ${{ github.ref_name }} & git stash & git pull & npm install & rmdir dist /s /q & npm run build & pm2 del ${{ secrets.APP_NAME }} &  pm2 serve dist/ ${{ secrets.APP_PORT }} --name ${{ secrets.APP_NAME }} --spa & cd ${{ secrets.TESTCASES_DIRECTORY}} & node testcases\${{ github.ref_name }}.js
